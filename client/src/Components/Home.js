@@ -1,6 +1,4 @@
 import React from 'react';
-import Signup from './Signup';
-import PostList from './PostList';
 
 const Home = () => {
   return (
