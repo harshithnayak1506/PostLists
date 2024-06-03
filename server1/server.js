@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -6,9 +5,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
+const path = require('path'); // Import path module
+
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Updated port number
+const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware
@@ -18,7 +20,7 @@ app.use(cors());
 // Rate limiting middleware
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+  max: 100, // Limit each IP to 100 requests per window (15 minutes)
   message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 
@@ -26,12 +28,11 @@ const apiLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/melodyverse', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
   console.log('Connected to MongoDB');
-  console.log('Server Started');
 }).catch(err => {
   console.error('Error connecting to MongoDB:', err);
 });
@@ -98,7 +99,6 @@ app.post('/api/signup', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     
-    // Check if the user with the provided email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
@@ -152,6 +152,13 @@ app.post('/api/login', async (req, res) => {
     console.error('Error logging in:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
+});
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 // Start server
