@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // Updated port number
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware
